@@ -75,25 +75,25 @@ public class Agent29 extends AbstractNegotiationParty
 		/***********************   print all settings of agent	 ***********************/
 //		System.out.println("Feasible Bid Amount:" + feasibleBidIndex.size());
 //
-//		List<Issue> issues = utilitySpace.getDomain().getIssues();
-//		for (Issue issue : issues) {
-//			int issueNumber = issue.getNumber();
-//			System.out.println(">> " + issue.getName() + issueNumber + " weight: " + additiveUtilitySpace.getWeight(issueNumber));
-//
-//			// Assuming that issues are discrete only
-//			IssueDiscrete issueDiscrete = (IssueDiscrete) issue;
-//			EvaluatorDiscrete evaluatorDiscrete = (EvaluatorDiscrete) additiveUtilitySpace.getEvaluator(issueNumber);
-//
-//			for (ValueDiscrete valueDiscrete : issueDiscrete.getValues()) {
-//				System.out.println(valueDiscrete.getValue());
-//				System.out.println("Evaluation(getValue): " + evaluatorDiscrete.getValue(valueDiscrete));
-//				try {
-//					System.out.println("Evaluation(getEvaluation): " + evaluatorDiscrete.getEvaluation(valueDiscrete));
-//				} catch (Exception e) {
-//					e.printStackTrace();
-//				}
-//			}
-//		}
+		List<Issue> issues = utilitySpace.getDomain().getIssues();
+		for (Issue issue : issues) {
+			int issueNumber = issue.getNumber();
+			System.out.println(">> " + issue.getName() + issueNumber + " weight: " + additiveUtilitySpace.getWeight(issueNumber));
+
+			// Assuming that issues are discrete only
+			IssueDiscrete issueDiscrete = (IssueDiscrete) issue;
+			EvaluatorDiscrete evaluatorDiscrete = (EvaluatorDiscrete) additiveUtilitySpace.getEvaluator(issueNumber);
+
+			for (ValueDiscrete valueDiscrete : issueDiscrete.getValues()) {
+				System.out.println(valueDiscrete.getValue());
+				System.out.println("Evaluation(getValue): " + evaluatorDiscrete.getValue(valueDiscrete));
+				try {
+					System.out.println("Evaluation(getEvaluation): " + evaluatorDiscrete.getEvaluation(valueDiscrete));
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		}
 	}
 
 	/**
