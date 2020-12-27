@@ -3,8 +3,7 @@ package group29;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import agents.anac.y2016.caduceus.agents.Caduceus.Opponent;
-import genius.core.Agent;
+
 import genius.core.AgentID;
 import genius.core.Bid;
 import genius.core.Domain;
@@ -224,6 +223,33 @@ public class Agent29 extends AbstractNegotiationParty
 				return Float.compare(opponentModel.getUtility(o1.bid), opponentModel.getUtility(o2.bid));
 			}
 		});
+
+		//extract the indices
+		ArrayList<Integer> result = new ArrayList<Integer>();
+		for (int i = 0; i < n; i++) {
+			result.add(pairs[i].index);
+		}
+		return result;
+	}
+
+	/**
+	 * select N worst element in array according to the opponent model we have, return index of N Worst
+	 * @param bids
+	 * @param n
+	 */
+	private ArrayList<Integer> opponentWorstNBidsIndex(ArrayList<Bid> bids, int n, OpponentModel opponentModel) {
+		//create sort able array with index and value pair
+		IndexValuePair[] pairs = new IndexValuePair[bids.size()];
+		for (int i = 0; i < bids.size(); i++) {
+			pairs[i] = new IndexValuePair(i, bids.get(i));
+		}
+
+		//sort
+		Arrays.sort(pairs, new Comparator<IndexValuePair>() {
+			public int compare(IndexValuePair o1, IndexValuePair o2) {
+				return Float.compare(opponentModel.getUtility(o1.bid), opponentModel.getUtility(o2.bid));
+			}
+		}.reversed());
 
 		//extract the indices
 		ArrayList<Integer> result = new ArrayList<Integer>();
