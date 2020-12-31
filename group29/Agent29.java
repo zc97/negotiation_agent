@@ -1,5 +1,8 @@
 package group29;
 
+import java.io.FileDescriptor;
+import java.io.FileOutputStream;
+import java.io.PrintStream;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -17,9 +20,11 @@ import genius.core.issue.Value;
 import genius.core.issue.ValueDiscrete;
 import genius.core.parties.AbstractNegotiationParty;
 import genius.core.parties.NegotiationInfo;
+import genius.core.uncertainty.BidRanking;
 import genius.core.utility.AbstractUtilitySpace;
 import genius.core.utility.AdditiveUtilitySpace;
 import genius.core.utility.EvaluatorDiscrete;
+import linear_programming_test_model.MyAdditiveUtilitySpaceFactory;
 
 /**
  * A simple example agent that makes random bids above a minimum target utility. 
@@ -45,6 +50,7 @@ public class Agent29 extends AbstractNegotiationParty
 	private int lastBid = 0;
 
 
+
 	/**
 	 * Initializes a new instance of the agent.
 	 */
@@ -53,43 +59,52 @@ public class Agent29 extends AbstractNegotiationParty
 	{
 		roundCount = 0;
 		super.init(info);
-		AbstractUtilitySpace utilitySpace = info.getUtilitySpace();
-		AdditiveUtilitySpace additiveUtilitySpace = (AdditiveUtilitySpace) utilitySpace;
-		this.additiveUtilitySpace = additiveUtilitySpace;
+//		AbstractUtilitySpace utilitySpace = info.getUtilitySpace();
+//		AdditiveUtilitySpace additiveUtilitySpace = (AdditiveUtilitySpace) utilitySpace;
+		System.setOut(new PrintStream(new FileOutputStream(FileDescriptor.out)));
+		if (hasPreferenceUncertainty()) {
+			System.out.println("Preference uncertainty is enabled.");
+			BidRanking bidRanking = userModel.getBidRanking();
+			Domain domain = bidRanking.getMaximalBid().getDomain();
+			MyAdditiveUtilitySpaceFactory myFactory = new MyAdditiveUtilitySpaceFactory(domain);
+			myFactory.estimateUsingBidRanks(bidRanking);
+			AdditiveUtilitySpace additiveUtilitySpace = myFactory.getUtilitySpace();
+			this.additiveUtilitySpace = additiveUtilitySpace;
 
-		ArrayList<Bid> allBids = generateAllBids(additiveUtilitySpace);
-		this.allBids = allBids;
+			ArrayList<Bid> allBids = generateAllBids(additiveUtilitySpace);
+			this.allBids = allBids;
 
-		ArrayList<Integer> feasibleBidIndex = feasibleBidsIndex(allBids);
-		this.feasibleBidIndex = feasibleBidIndex;
+			ArrayList<Integer> feasibleBidIndex = feasibleBidsIndex(allBids);
+			this.feasibleBidIndex = feasibleBidIndex;
 
-		ArrayList<Bid> feasibleBid = getFeasibleBids(allBids);
-		this.feasibleBid = feasibleBid;
-		ArrayList<Bid> rank = bidsRank(feasibleBid);
-		this.rank = rank;
+			ArrayList<Bid> feasibleBid = getFeasibleBids(allBids);
+			this.feasibleBid = feasibleBid;
+			ArrayList<Bid> rank = bidsRank(feasibleBid);
+			this.rank = rank;
 
-		this.opponentModelMap = new HashMap<AgentID, OpponentModel>();
+			this.opponentModelMap = new HashMap<AgentID, OpponentModel>();
 
 
-		/***********************   print all settings of agent	 ***********************/
+			/***********************   print all settings of agent	 ***********************/
 //		System.out.println("Feasible Bid Amount:" + feasibleBidIndex.size());
 //
-		List<Issue> issues = utilitySpace.getDomain().getIssues();
-		for (Issue issue : issues) {
-			int issueNumber = issue.getNumber();
-			System.out.println(">> " + issue.getName() + issueNumber + " weight: " + additiveUtilitySpace.getWeight(issueNumber));
+			List<Issue> issues = additiveUtilitySpace.getDomain().getIssues();
+			for (Issue issue : issues) {
+				int issueNumber = issue.getNumber();
+				System.out.println(">> " + issue.getName() + issueNumber + " weight: " + additiveUtilitySpace.getWeight(issueNumber));
 
-			// Assuming that issues are discrete only
-			IssueDiscrete issueDiscrete = (IssueDiscrete) issue;
-			EvaluatorDiscrete evaluatorDiscrete = (EvaluatorDiscrete) additiveUtilitySpace.getEvaluator(issueNumber);
+				// Assuming that issues are discrete only
+				IssueDiscrete issueDiscrete = (IssueDiscrete) issue;
+				EvaluatorDiscrete evaluatorDiscrete = (EvaluatorDiscrete) additiveUtilitySpace.getEvaluator(issueNumber);
 
-			for (ValueDiscrete valueDiscrete : issueDiscrete.getValues()) {
-				System.out.println(valueDiscrete.getValue());
-				System.out.println("Evaluation(getValue): " + evaluatorDiscrete.getValue(valueDiscrete));
-				try {
-					System.out.println("Evaluation(getEvaluation): " + evaluatorDiscrete.getEvaluation(valueDiscrete));
-				} catch (Exception e) {
-					e.printStackTrace();
+				for (ValueDiscrete valueDiscrete : issueDiscrete.getValues()) {
+					System.out.println(valueDiscrete.getValue());
+					System.out.println("Evaluation(getValue): " + evaluatorDiscrete.getValue(valueDiscrete));
+					try {
+						System.out.println("Evaluation(getEvaluation): " + evaluatorDiscrete.getEvaluation(valueDiscrete));
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
 				}
 			}
 		}
@@ -120,7 +135,7 @@ public class Agent29 extends AbstractNegotiationParty
 		}
 		List<List<ValueDiscrete>> cartesian_combinations = cartesianCombinations(option_lists);
 
-		Domain domain = utilitySpace.getDomain();
+		Domain domain = additiveUtilitySpace.getDomain();
 		for (List<ValueDiscrete> options : cartesian_combinations)
 		{
 			HashMap<Integer, Value> issue_num_option = new HashMap<Integer, Value>();
@@ -148,7 +163,7 @@ public class Agent29 extends AbstractNegotiationParty
 		int index = 0;
 		for(Bid bid : bids)
 		{
-			double utility = utilitySpace.getUtility(bid);
+			double utility = additiveUtilitySpace.getUtility(bid);
 			if(utility >= MINIMUM_TARGET)
 			{
 				feasible_bids.add(bid);
@@ -171,7 +186,7 @@ public class Agent29 extends AbstractNegotiationParty
 		ArrayList<Bid> feasible_bids = new ArrayList<Bid>();
 		for(Bid bid : bids)
 		{
-			double utility = utilitySpace.getUtility(bid);
+			double utility = additiveUtilitySpace.getUtility(bid);
 			if(utility >= MINIMUM_TARGET)
 			{
 				feasible_bids.add(bid);
@@ -275,7 +290,7 @@ public class Agent29 extends AbstractNegotiationParty
 		//sort
 		Arrays.sort(pairs, new Comparator<IndexValuePair>() {
 			public int compare(IndexValuePair o1, IndexValuePair o2) {
-				return Double.compare(utilitySpace.getUtility(o1.bid), utilitySpace.getUtility(o2.bid));
+				return Double.compare(additiveUtilitySpace.getUtility(o1.bid), additiveUtilitySpace.getUtility(o2.bid));
 			}
 		});
 
@@ -322,7 +337,7 @@ public class Agent29 extends AbstractNegotiationParty
 		while(it.hasNext())
 		{
 			int bidIndex = it.next();
-			double utility = utilitySpace.getUtility(allBids.get(bidIndex));
+			double utility = additiveUtilitySpace.getUtility(allBids.get(bidIndex));
 			if(utility > maxUtility)
 			{
 				maxBidIndex = bidIndex;
@@ -342,8 +357,9 @@ public class Agent29 extends AbstractNegotiationParty
 	{
 		// Check for acceptance if we have received an offer
 		if (lastOffer != null)
-				if (getUtility(lastOffer) >= MINIMUM_TARGET)
+				if (getUtility(lastOffer) >= MINIMUM_TARGET) {
 					return new Accept(getPartyId(), lastOffer);
+				}
 				else if (timeline.getTime() >= 0.99)
 					return new EndNegotiation(getPartyId());
 
@@ -369,7 +385,7 @@ public class Agent29 extends AbstractNegotiationParty
 			ArrayList<Integer> bestNBidsIndex;
 
 			//increase care for opponent and decrease the reluctance parameter for my agent
-			care = care*1.04;
+			care = care * 1.04;
 			Reluctance = Reluctance * 0.990;
 //			System.out.println("feasible bids amount:" + feasibleBidIndex.size());
 
@@ -409,7 +425,7 @@ public class Agent29 extends AbstractNegotiationParty
 			System.out.println("round " + roundCount + " AV: " + MINIMUM_TARGET);
 			System.out.println("round " + roundCount + " Care: " + care);
 
-			MINIMUM_TARGET = utilitySpace.getUtility(allBids.get(bestIndex)) * Reluctance;
+			MINIMUM_TARGET = additiveUtilitySpace.getUtility(allBids.get(bestIndex)) * Reluctance;
 
 		}
 		roundCount += 1;
@@ -494,7 +510,12 @@ public class Agent29 extends AbstractNegotiationParty
 	@Override
 	public AbstractUtilitySpace estimateUtilitySpace() 
 	{
-		return super.estimateUtilitySpace();
+		BidRanking bidRanking = userModel.getBidRanking();
+		Domain domain = bidRanking.getMaximalBid().getDomain();
+		MyAdditiveUtilitySpaceFactory myFactory = new MyAdditiveUtilitySpaceFactory(domain);
+		myFactory.estimateUsingBidRanks(bidRanking);
+		AdditiveUtilitySpace additiveUtilitySpace = myFactory.getUtilitySpace();
+		return additiveUtilitySpace;
 	}
 
 }
