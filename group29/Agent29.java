@@ -33,21 +33,25 @@ public class Agent29 extends AbstractNegotiationParty {
         super.init(info);
         System.setOut(new PrintStream(new FileOutputStream(FileDescriptor.out)));
         if (hasPreferenceUncertainty()) {
+            //get partial ordered bid ranking from uncertain user model
             BidRanking bidRanking = userModel.getBidRanking();
+            //get domain
             Domain domain = bidRanking.getMaximalBid().getDomain();
+            //predicted user utility space
             linear_programming_test_model.MyAdditiveUtilitySpaceFactory myFactory = new MyAdditiveUtilitySpaceFactory(domain);
             myFactory.estimateUsingBidRanks(bidRanking);
             AdditiveUtilitySpace additiveUtilitySpace = myFactory.getUtilitySpace();
             this.additiveUtilitySpace = additiveUtilitySpace;
 
+            //create BidCounter, OpponentModel instances for initializing JonnyBlack
             BidCounter bidCounter = new BidCounter(additiveUtilitySpace);
             bidCounter.init();
             OpponentModel opponentModel = new OpponentModel(additiveUtilitySpace, bidCounter);
             this.opponentModel = opponentModel;
-
             JonnyBlack jb = new JonnyBlack(additiveUtilitySpace, opponentModel);
             this.jb = jb;
 
+            //get ground truth user model with real UtilitySpace
             ExperimentalUserModel experimentalUserModel = (ExperimentalUserModel) userModel;
             UncertainAdditiveUtilitySpace realUtilitySpace = experimentalUserModel.getRealUtilitySpace();
             this.realUtilitySpace = realUtilitySpace;
@@ -81,6 +85,7 @@ public class Agent29 extends AbstractNegotiationParty {
     @Override
     public void receiveMessage(AgentID sender, Action action)
     {
+        //add received bids to opponent model for further prediction
         if (action instanceof Offer)
         {
             Bid lastOffer = ((Offer) action).getBid();
