@@ -228,19 +228,19 @@ public class MyAdditiveUtilitySpaceFactory extends AdditiveUtilitySpaceFactory  
             model.optimize();
 
             //System.out.print variables
-            for (Issue issue : issues) {
-                Integer issueNum = issue.getNumber();
-                IssueDiscrete discreteIssue = (IssueDiscrete) issue;
-                String issueName = "w" + issue.getNumber();
-                System.out.println(issueName + " " + model.getVarByName(issueName).get(GRB.DoubleAttr.X));
-                List<ValueDiscrete> discreteValues = discreteIssue.getValues();
-                for (ValueDiscrete value : discreteValues){
-                    Integer valueNum = ((IssueDiscrete) issue).getValueIndex(value) + 1;
-                    String varName = "u" + issueNum.toString() + valueNum.toString();
-                    System.out.println(varName + " " + model.getVarByName(varName).get(GRB.DoubleAttr.X));
-                }
-            }
-            System.out.println("Obj e : " + model.get(GRB.DoubleAttr.ObjVal));
+//            for (Issue issue : issues) {
+//                Integer issueNum = issue.getNumber();
+//                IssueDiscrete discreteIssue = (IssueDiscrete) issue;
+//                String issueName = "w" + issue.getNumber();
+//                System.out.println(issueName + " " + model.getVarByName(issueName).get(GRB.DoubleAttr.X));
+//                List<ValueDiscrete> discreteValues = discreteIssue.getValues();
+//                for (ValueDiscrete value : discreteValues){
+//                    Integer valueNum = ((IssueDiscrete) issue).getValueIndex(value) + 1;
+//                    String varName = "u" + issueNum.toString() + valueNum.toString();
+//                    System.out.println(varName + " " + model.getVarByName(varName).get(GRB.DoubleAttr.X));
+//                }
+//            }
+//            System.out.println("Obj e : " + model.get(GRB.DoubleAttr.ObjVal));
 
 
             //set to the result to user utility model
